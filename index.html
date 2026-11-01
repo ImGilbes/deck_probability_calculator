@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Deck Probability Calculator</title>
+    <style>
+      :root {
+        font-family: system-ui, sans-serif;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #101522;
+        color: #ecf1fc;
+      }
+      main {
+        max-width: 900px;
+        margin: auto;
+        padding: 32px 18px 70px;
+      }
+      h1 {
+        margin: 0;
+      }
+      p {
+        color: #a8b4cb;
+      }
+      section {
+        background: #1a2335;
+        border: 1px solid #35435a;
+        border-radius: 14px;
+        padding: 20px;
+        margin: 18px 0;
+      }
+      h2 {
+        font-size: 1.12rem;
+        margin: 0 0 15px;
+      }
+      label {
+        display: block;
+        font-size: 0.82rem;
+        color: #a8b4cb;
+        margin: 0 0 5px;
+      }
+      input {
+        width: 100%;
+        background: #111a2a;
+        border: 1px solid #475670;
+        border-radius: 8px;
+        padding: 10px;
+        color: #fff;
+        font: inherit;
+      }
+      input:focus {
+        outline: 2px solid #70b9ff;
+      }
+      button {
+        border: 0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .add {
+        background: #283e5e;
+        color: #b6dcff;
+      }
+      .remove {
+        background: #513143;
+        color: #ffc4cc;
+      }
+      .calculate {
+        width: 100%;
+        background: #71ddbd;
+        color: #102820;
+        padding: 14px;
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+      .card {
+        display: grid;
+        grid-template-columns: 2fr 90px auto;
+        gap: 9px;
+        align-items: end;
+        margin-bottom: 12px;
+      }
+      .combo {
+        border: 1px solid #43516a;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 12px 0;
+        background: #202c40;
+      }
+      .combohead {
+        display: flex;
+        gap: 10px;
+        align-items: end;
+      }
+      .combohead > div {
+        flex: 1;
+      }
+      .requirements {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .requirement {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        background: #131e30;
+        padding: 8px;
+        border-radius: 8px;
+      }
+      .requirement span {
+        flex: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        font-size: 0.85rem;
+      }
+      .requirement input {
+        width: 64px;
+      }
+      .hint {
+        font-size: 0.86rem;
+      }
+      .error {
+        color: #ffadbb;
+      }
+      .result {
+        background: #202c40;
+        border-radius: 9px;
+        padding: 12px 15px;
+        margin: 9px 0;
+      }
+      .result header {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+      }
+      .result strong {
+        color: #8ce8c9;
+        font-size: 1.22rem;
+      }
+      .bar {
+        height: 7px;
+        background: #101522;
+        border-radius: 8px;
+        margin: 9px 0;
+        overflow: hidden;
+      }
+      .bar span {
+        display: block;
+        height: 100%;
+        background: #71ddbd;
+      }
+      .detail {
+        font-size: 0.83rem;
+        color: #afbed4;
+      }
+      small {
+        color: #9facbe;
+      }
+      h3 {
+        margin: 24px 0 8px;
+      }
+      @media (max-width: 600px) {
+        .card {
+          grid-template-columns: 1fr 1fr;
+        }
+        .two {
+          grid-template-columns: 1fr;
+        }
+        .card .remove {
+          align-self: end;
+        }
+      }
+      .jolly {
+        background: #131e30;
+        border: 1px solid #43516a;
+        border-radius: 9px;
+        padding: 12px;
+        margin: 10px 0;
+      }
+      .jollyhead {
+        display: grid;
+        grid-template-columns: 1fr 95px auto;
+        gap: 9px;
+        align-items: end;
+      }
+      .targets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .targets label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: #202c40;
+        border-radius: 6px;
+        padding: 7px;
+        margin: 0;
+      }
+      .targets input {
+        width: auto;
+      }
+      .jollytitle {
+        margin: 18px 0 8px;
+        font-weight: 600;
+      }
+      @media (max-width: 600px) {
+        .jollyhead {
+          grid-template-columns: 1fr 90px;
+        }
+        .jollyhead button {
+          grid-column: 1/-1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Gianluca's Deck Probability Calculator</h1>
+      <p>
+        Find exact odds for cards and combos in a hand drawn without replacement. Created for Yugioh retro formats, usable with any card game.
+      </p>
+      <section>
+        <h2>1 · Deck and hand</h2>
+        <div class="two">
+          <div>
+            <label for="deck">Cards in deck</label
+            ><input id="deck" type="number" min="1" step="1" value="40" />
+          </div>
+          <div>
+            <label for="hand">Starting hand size</label
+            ><input id="hand" type="number" min="1" step="1" value="6" />
+          </div>
+          <div>
+            <label for="ug">Upstart Goblin (UG) copies in deck</label
+            ><input id="ug" type="number" min="0" step="1" value="0" />
+          </div>
+        </div>
+        <p class="hint">
+          Each drawn UG draws one more card; if that card is also UG, it draws
+          again. UG is not a combo card or jolly. Results refer to cards seen
+          after all UG draws resolve.
+        </p>
+        <p class="hint" id="deckInfo"></p>
+      </section>
+      <section>
+        <h2>2 · Cards</h2>
+        <div id="cards"></div>
+        <button class="add" id="addCard">+ Add card</button>
+        <p class="hint">
+          Each card name must be unique. Unlisted cards count as other cards in
+          the deck.
+        </p>
+      </section>
+      <section>
+        <h2>3 · Combos</h2>
+        <p class="hint">
+          Enter the minimum copies of each card needed together. Add identified
+          jolly types and select every required card each may replace. Each
+          drawn jolly replaces one missing card, even if it has several possible
+          targets. Jolly copies are physical cards counted separately in the
+          deck.
+        </p>
+        <div id="combos"></div>
+        <button class="add" id="addCombo">+ Add combo</button>
+      </section>
+      <button class="calculate" id="calculate">Calculate probabilities</button>
+      <section id="results" hidden>
+        <h2>Results</h2>
+        <div id="output"></div>
+      </section>
+    </main>
+    <script>
+      const el = (id) => document.getElementById(id);
+      const escapeHTML = (s) =>
+        String(s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      let serial = 0;
+      const next = () => ++serial;
+      const cards = [
+        { id: next(), name: "Starter", qty: 3 },
+        { id: next(), name: "Extender", qty: 2 },
+      ];
+      const combos = [
+        {
+          id: next(),
+          name: "Starter + Extender",
+          req: { [cards[0].id]: 1, [cards[1].id]: 1 },
+          jollies: [],
+        },
+      ];
+      function readInputs() {
+        document.querySelectorAll(".card").forEach((row) => {
+          let c = cards.find((x) => x.id === Number(row.dataset.id));
+          c.name = row.querySelector(".name").value;
+          c.qty = row.querySelector(".qty").value;
+        });
+        document.querySelectorAll(".combo").forEach((row) => {
+          let combo = combos.find((x) => x.id === Number(row.dataset.id));
+          combo.name = row.querySelector(".comboName").value;
+          row
+            .querySelectorAll(".needed")
+            .forEach((input) => (combo.req[input.dataset.card] = input.value));
+          row.querySelectorAll(".jolly").forEach((jrow) => {
+            let j = combo.jollies.find((x) => x.id === Number(jrow.dataset.id));
+            j.code = jrow.querySelector(".jollyCode").value;
+            j.qty = jrow.querySelector(".jollyQty").value;
+            j.targets = Array.from(
+              jrow.querySelectorAll(".jollyTarget:checked"),
+              (input) => Number(input.value),
+            );
+          });
+        });
+      }
+      function renderCards() {
+        el("cards").innerHTML = cards
+          .map(
+            (c) =>
+              `<div class="card" data-id="${c.id}"><div><label>Card name</label><input class="name" value="${escapeHTML(c.name)}" placeholder="e.g. Starter"></div><div><label>Copies</label><input class="qty" type="number" min="1" step="1" value="${escapeHTML(c.qty)}"></div><button class="remove" data-remove-card="${c.id}" aria-label="Remove card">×</button></div>`,
+          )
+          .join("");
+      }
+      function renderCombos() {
+        el("combos").innerHTML = combos
+          .map(
+            (combo) =>
+              `<div class="combo" data-id="${combo.id}"><div class="combohead"><div><label>Combo name</label><input class="comboName" value="${escapeHTML(combo.name)}" placeholder="Combo name"></div><button class="remove" data-remove-combo="${combo.id}" aria-label="Remove combo">×</button></div><div class="requirements">${cards.map((c) => `<label class="requirement"><span>${escapeHTML(c.name || "Unnamed card")}</span><input class="needed" type="number" min="0" step="1" data-card="${c.id}" value="${escapeHTML(combo.req[c.id] ?? 0)}" aria-label="Copies of ${escapeHTML(c.name)} needed"></label>`).join("")}</div><div class="jollytitle">Jollies for this combo</div>${combo.jollies.map((j) => `<div class="jolly" data-id="${j.id}"><div class="jollyhead"><div><label>Jolly identifier</label><input class="jollyCode" value="${escapeHTML(j.code)}" placeholder="e.g. JOLLY-001"></div><div><label>Copies</label><input class="jollyQty" type="number" min="1" step="1" value="${escapeHTML(j.qty)}"></div><button class="remove" data-remove-jolly="${j.id}" aria-label="Remove jolly">×</button></div><div class="targets"><span class="hint">Can replace:</span>${cards.map((c) => `<label><input type="checkbox" class="jollyTarget" value="${c.id}" ${j.targets.includes(c.id) ? "checked" : ""}>${escapeHTML(c.name || "Unnamed card")}</label>`).join("")}</div></div>`).join("")}<button class="add" data-add-jolly="${combo.id}">+ Add jolly</button></div>`,
+          )
+          .join("");
+      }
+      function updateInfo() {
+        let named = cards.reduce((s, c) => s + (Number(c.qty) || 0), 0),
+          unique = new Map();
+        combos.forEach((c) =>
+          c.jollies.forEach((j) => {
+            if (j.code.trim()) unique.set(j.code.trim(), Number(j.qty) || 0);
+          }),
+        );
+        let jolly = Array.from(unique.values()).reduce((s, n) => s + n, 0),
+          ug = Number(el("ug").value),
+          deck = Number(el("deck").value);
+        el("deckInfo").textContent =
+          `${named} named copies · ${jolly} jolly copies · ${ug} UG copies · ${Number.isInteger(deck) && deck >= named + jolly + ug ? deck - named - jolly - ug : "—"} other cards`;
+      }
+      el("addCard").onclick = () => {
+        readInputs();
+        cards.push({ id: next(), name: "", qty: 1 });
+        renderCards();
+        renderCombos();
+        updateInfo();
+      };
+      el("addCombo").onclick = () => {
+        readInputs();
+        combos.push({ id: next(), name: "", req: {}, jollies: [] });
+        renderCombos();
+        updateInfo();
+      };
+      document.addEventListener("click", (e) => {
+        let cid = e.target.dataset.removeCard,
+          bid = e.target.dataset.removeCombo,
+          aid = e.target.dataset.addJolly,
+          jid = e.target.dataset.removeJolly;
+        if (cid) {
+          readInputs();
+          cards.splice(
+            cards.findIndex((c) => c.id === Number(cid)),
+            1,
+          );
+          combos.forEach((c) =>
+            c.jollies.forEach(
+              (j) =>
+                (j.targets = j.targets.filter((id) =>
+                  cards.some((card) => card.id === id),
+                )),
+            ),
+          );
+          renderCards();
+          renderCombos();
+          updateInfo();
+        }
+        if (bid) {
+          readInputs();
+          combos.splice(
+            combos.findIndex((c) => c.id === Number(bid)),
+            1,
+          );
+          renderCombos();
+          updateInfo();
+        }
+        if (aid) {
+          readInputs();
+          combos
+            .find((c) => c.id === Number(aid))
+            .jollies.push({ id: next(), code: "", qty: 1, targets: [] });
+          renderCombos();
+          updateInfo();
+        }
+        if (jid) {
+          readInputs();
+          let combo = combos.find((c) =>
+            c.jollies.some((j) => j.id === Number(jid)),
+          );
+          combo.jollies.splice(
+            combo.jollies.findIndex((j) => j.id === Number(jid)),
+            1,
+          );
+          renderCombos();
+          updateInfo();
+        }
+      });
+      el("cards").addEventListener("input", () => {
+        readInputs();
+        updateInfo();
+      });
+      el("combos").addEventListener("input", () => {
+        readInputs();
+        updateInfo();
+      });
+      el("combos").addEventListener("change", readInputs);
+      el("deck").addEventListener("input", updateInfo);
+      el("ug").addEventListener("input", updateInfo);
+      function integer(value, min, max = Infinity) {
+        let n = Number(value);
+        return value !== "" && Number.isSafeInteger(n) && n >= min && n <= max;
+      }
+      function logChoose(n, k) {
+        if (k < 0 || k > n) return -Infinity;
+        k = Math.min(k, n - k);
+        let x = 0;
+        for (let i = 1; i <= k; i++) x += Math.log(n - k + i) - Math.log(i);
+        return x;
+      }
+      function probabilityAtLeast(groups, requirements, hand, deck) {
+        const other = deck - groups.reduce((s, x) => s + x, 0),
+          denominator = logChoose(deck, hand);
+        let terms = [];
+        function walk(i, used, weight) {
+          if (i === groups.length) {
+            let rest = hand - used;
+            if (rest >= 0 && rest <= other)
+              terms.push(weight + logChoose(other, rest));
+            return;
+          }
+          let min = requirements[i],
+            max = Math.min(groups[i], hand - used);
+          for (let count = min; count <= max; count++)
+            walk(i + 1, used + count, weight + logChoose(groups[i], count));
+        }
+        walk(0, 0, 0);
+        if (!terms.length) return 0;
+        let peak = Math.max(...terms);
+        return Math.min(
+          1,
+          Math.exp(peak - denominator) *
+            terms.reduce((sum, t) => sum + Math.exp(t - peak), 0),
+        );
+      }
+      function canComplete(event, drawn, cardCount) {
+        const missing = event.req.map((n, i) => Math.max(0, n - drawn[i]));
+        if (missing.every((n) => n === 0)) return true;
+        const available = event.jollies
+          .map((j) => ({
+            count: drawn[cardCount + j.index],
+            targets: j.targets,
+          }))
+          .filter((j) => j.count > 0);
+        if (
+          available.reduce((s, j) => s + j.count, 0) <
+          missing.reduce((s, n) => s + n, 0)
+        )
+          return false;
+        function assign(i) {
+          if (missing.every((n) => n === 0)) return true;
+          if (i === available.length) return false;
+          let { count, targets } = available[i];
+          function distribute(t, left) {
+            if (t === targets.length) return assign(i + 1);
+            let target = targets[t],
+              max = Math.min(left, missing[target]);
+            for (let n = 0; n <= max; n++) {
+              missing[target] -= n;
+              if (distribute(t + 1, left - n)) {
+                missing[target] += n;
+                return true;
+              }
+              missing[target] += n;
+            }
+            return false;
+          }
+          return distribute(0, count);
+        }
+        return assign(0);
+      }
+      function probabilityEvents(groups, hand, deck, events, cardCount) {
+        const other = deck - groups.reduce((sum, n) => sum + n, 0),
+          logDen = logChoose(deck, hand);
+        const peaks = Array(events.length + 1).fill(-Infinity),
+          scaled = Array(events.length + 1).fill(0);
+        function accumulate(index, term) {
+          if (term > peaks[index]) {
+            scaled[index] = scaled[index] * Math.exp(peaks[index] - term) + 1;
+            peaks[index] = term;
+          } else scaled[index] += Math.exp(term - peaks[index]);
+        }
+        function visit(i, used, weight, drawn) {
+          if (i === groups.length) {
+            let rest = hand - used;
+            if (rest < 0 || rest > other) return;
+            let successes = events.map((event) =>
+              canComplete(event, drawn, cardCount),
+            );
+            if (!successes.some(Boolean)) return;
+            let term = weight + logChoose(other, rest) - logDen;
+            successes.forEach((yes, k) => {
+              if (yes) accumulate(k, term);
+            });
+            accumulate(events.length, term);
+            return;
+          }
+          let max = Math.min(groups[i], hand - used);
+          for (let count = 0; count <= max; count++) {
+            drawn[i] = count;
+            visit(
+              i + 1,
+              used + count,
+              weight + logChoose(groups[i], count),
+              drawn,
+            );
+          }
+        }
+        visit(0, 0, 0, []);
+        return peaks.map((p, i) =>
+          p === -Infinity ? 0 : Math.min(1, Math.exp(p) * scaled[i]),
+        );
+      }
+      function percent(p) {
+        return (
+          (p * 100).toLocaleString(undefined, { maximumFractionDigits: 6 }) +
+          "%"
+        );
+      }
+      function result(label, detail, p) {
+        return `<div class="result"><header><span>${escapeHTML(label)}</span><strong>${percent(p)}</strong></header><div class="bar"><span style="width:${Math.max(0, Math.min(100, p * 100))}%"></span></div><div class="detail">${escapeHTML(detail)}</div></div>`;
+      }
+      el("calculate").onclick = () => {
+        readInputs();
+        let deck = el("deck").value,
+          hand = el("hand").value,
+          ug = el("ug").value,
+          errors = [];
+        if (!integer(deck, 1))
+          errors.push("Deck size must be a positive whole number.");
+        if (!integer(hand, 1, Number(deck)))
+          errors.push(
+            "Hand size must be a positive whole number no larger than the deck.",
+          );
+        if (!integer(ug, 0, Number(deck)))
+          errors.push(
+            "UG copies must be a nonnegative whole number no larger than the deck.",
+          );
+        if (!cards.length) errors.push("Add at least one card.");
+        let cardNames = new Set();
+        cards.forEach((c, i) => {
+          let name = c.name.trim();
+          if (!name) errors.push(`Card ${i + 1} needs a name.`);
+          if (cardNames.has(name))
+            errors.push(`Duplicate card name: ${name}`);
+          cardNames.add(name);
+          if (!integer(c.qty, 1))
+            errors.push(
+              `Card ${i + 1} needs a positive whole-number quantity.`,
+            );
+        });
+        const jollyTypes = new Map();
+        combos.forEach((combo, i) => {
+          if (!combo.name.trim()) errors.push(`Combo ${i + 1} needs a name.`);
+          let active = 0;
+          cards.forEach((c) => {
+            let v = combo.req[c.id] ?? 0;
+            if (!integer(v, 0))
+              errors.push(`Combo ${i + 1} has an invalid requirement.`);
+            active += Number(v) || 0;
+          });
+          if (active === 0)
+            errors.push(`Combo ${i + 1} must require at least one card.`);
+          const seen = new Set();
+          combo.jollies.forEach((j, k) => {
+            let code = j.code.trim();
+            if (!code)
+              errors.push(
+                `Combo ${i + 1}, jolly ${k + 1} needs an identifier.`,
+              );
+            if (cardNames.has(code))
+              errors.push(`Jolly identifier ${code} is already a card name.`);
+            if (seen.has(code))
+              errors.push(`Combo ${i + 1} lists jolly ${code} twice.`);
+            seen.add(code);
+            if (!integer(j.qty, 1))
+              errors.push(
+                `Combo ${i + 1}, jolly ${k + 1} needs a positive whole-number quantity.`,
+              );
+            if (
+              !j.targets.length ||
+              j.targets.some(
+                (id) =>
+                  !cards.some((c) => c.id === id && Number(combo.req[id]) > 0),
+              )
+            )
+              errors.push(
+                `Combo ${i + 1}, jolly ${k + 1} must target at least one required card and no unrequired cards.`,
+              );
+            if (
+              jollyTypes.has(code) &&
+              String(jollyTypes.get(code).qty) !== String(j.qty)
+            )
+              errors.push(
+                `Jolly ${code} has inconsistent deck quantities across combos.`,
+              );
+            else if (code) jollyTypes.set(code, j);
+          });
+          cards.forEach((c) => {
+            let supply =
+              Number(c.qty) +
+              combo.jollies
+                .filter((j) => j.targets.includes(c.id))
+                .reduce((sum, j) => sum + (Number(j.qty) || 0), 0);
+            if (Number(combo.req[c.id]) > supply)
+              errors.push(
+                `Combo ${i + 1} cannot meet the requirement for ${c.name || "unnamed card"} with available copies.`,
+              );
+          });
+        });
+        if (
+          cards.reduce((sum, c) => sum + (Number(c.qty) || 0), 0) +
+            Array.from(jollyTypes.values()).reduce(
+              (sum, j) => sum + (Number(j.qty) || 0),
+              0,
+            ) +
+            Number(ug) >
+          Number(deck)
+        )
+          errors.push(
+            "Named cards, jollies, and UG together exceed deck size.",
+          );
+        el("results").hidden = false;
+        let output = el("output");
+        if (errors.length) {
+          output.innerHTML =
+            '<div class="error">' +
+            errors.map(escapeHTML).join("<br>") +
+            "</div>";
+          return;
+        }
+        deck = Number(deck);
+        hand = Number(hand);
+        ug = Number(ug);
+        let effectiveDeck = deck - ug,
+          effectiveHand = Math.min(hand, effectiveDeck),
+          quantities = cards.map((c) => Number(c.qty));
+        let html = "<h3>Individual cards · at least one copy</h3>";
+        cards.forEach((c, i) => {
+          let p = probabilityAtLeast(
+            [quantities[i]],
+            [1],
+            effectiveHand,
+            effectiveDeck,
+          );
+          html += result(
+            c.name,
+            `${c.qty} in deck · at least 1 after UG draws`,
+            p,
+          );
+        });
+        if (combos.length) {
+          let types = Array.from(jollyTypes.entries()),
+            indices = new Map(types.map(([code], i) => [code, i]));
+          let events = combos.map((combo) => ({
+            req: cards.map((c) => Number(combo.req[c.id] ?? 0)),
+            jollies: combo.jollies.map((j) => ({
+              index: indices.get(j.code.trim()),
+              targets: j.targets.map((id) =>
+                cards.findIndex((c) => c.id === id),
+              ),
+            })),
+          }));
+          let odds = probabilityEvents(
+            [...quantities, ...types.map(([, j]) => Number(j.qty))],
+            effectiveHand,
+            effectiveDeck,
+            events,
+            cards.length,
+          );
+          html += "<h3>Combos · all required cards together</h3>";
+          combos.forEach((combo, i) => {
+            let detail = cards
+              .filter((c, j) => events[i].req[j] > 0)
+              .map((c) => `${events[i].req[cards.indexOf(c)]}× ${c.name}`)
+              .join(" + ");
+            if (combo.jollies.length)
+              detail +=
+                " · " +
+                combo.jollies
+                  .map(
+                    (j) =>
+                      `${j.qty}× ${j.code} → ${j.targets.map((id) => cards.find((c) => c.id === id).name).join(" / ")}`,
+                  )
+                  .join("; ");
+            html += result(combo.name, detail, odds[i]);
+          });
+          html +=
+            "<h3>Overall combo chance</h3>" +
+            result(
+              "At least one combo",
+              "One or more listed combos satisfied in the same hand",
+              odds[combos.length],
+            );
+        }
+        html += `<p class="hint">UG replaces itself with another draw, including chained UG draws. For outcomes involving only non-UG cards, this is exactly equivalent to drawing ${effectiveHand} cards from the ${effectiveDeck} non-UG cards; the total number of physical cards seen can vary. ${effectiveHand < hand ? "The deck has fewer non-UG cards than starting draws, so all non-UG cards are seen. " : ""}Combos may overlap; their probabilities do not add together.</p>`;
+        output.innerHTML = html;
+        el("results").scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      renderCards();
+      renderCombos();
+      updateInfo();
+    </script>
+  </body>
+</html>
